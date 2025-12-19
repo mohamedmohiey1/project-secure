@@ -1,0 +1,77 @@
+rules:
+  # Rule 1: SQL Injection via String Concatenation
+  - id: insecure-sql-concat
+    languages: [javascript]
+    severity: ERROR
+    message: "Potential SQL injection via string concatenation"
+    pattern: |
+      $QUERY = "SELECT" + $INPUT + "FROM" + $TABLE
+    # أو نمط أوسع:
+    # pattern: |
+    #   $DB.query("SELECT ..." + $USER_INPUT + "...")
+
+  # Rule 2: Reflected XSS via unsanitized response
+  - id: reflected-xss-response
+    languages: [javascript]
+    severity: ERROR
+    message: "Potential reflected XSS via unsanitized user input in response"
+    pattern: |
+      res.send($USER_INPUT)
+
+  # Rule 3: Missing JWT Verification (algorithm none)
+  - id: insecure-jwt-verify
+    languages: [javascript]
+    severity: ERROR
+    message: "Insecure JWT verification - missing algorithm or using 'none'"
+    pattern: |
+      jwt.verify($TOKEN, $SECRET, { algorithms: ["none"] })
+    # أو نمط بدون خوارزمية محددة:
+    # pattern: |
+    #   jwt.verify($TOKEN, $SECRET)
+
+  # Rule 4: Hardcoded Secret in Code
+  - id: hardcoded-secret
+    languages: [javascript]
+    severity: ERROR
+    message: "Hardcoded secret or password in source code"
+    pattern: |
+      $SECRET = "password123" or $SECRET = "supersecret"
+
+  # Rule 5: Missing Helmet Security Headers
+  - id: missing-helmet-middleware
+    languages: [javascript]
+    severity: WARNING
+    message: "Express app missing Helmet middleware for security headers"
+    pattern: |
+      const app = express()
+      // بدون app.use(helmet())
+
+  # Rule 6: Insecure File Path from User Input
+  - id: insecure-file-path
+    languages: [javascript]
+    severity: ERROR
+    message: "User input used directly in filesystem path (Path Traversal risk)"
+    pattern: |
+      fs.readFile($USER_INPUT, ...)
+
+  # Rule 7: No Input Validation on Login Route
+  - id: no-login-validation
+    languages: [javascript]
+    severity: WARNING
+    message: "Login endpoint missing input validation/sanitization"
+    pattern: |
+      app.post("/api/login", ($REQ, $RES) => {
+        $USERNAME = $REQ.body.username
+        $PASSWORD = $REQ.body.password
+        // بدون تحقق
+      })
+
+  # Rule 8: Missing Rate Limiting on Sensitive Routes
+  - id: missing-rate-limit
+    languages: [javascript]
+    severity: WARNING
+    message: "Sensitive endpoint missing rate limiting middleware"
+    pattern: |
+      app.post("/api/login", $HANDLER)
+      # أ,
+      app.post("/api/reset-password", $HANDLER)
